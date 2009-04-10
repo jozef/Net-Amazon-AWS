@@ -1,0 +1,8 @@
+Build.PL
+Changes
+MANIFEST
+README
+lib/Net/Amazon/AWS.pm
+t/00-load.t
+t/pod-coverage.t
+t/pod.t
