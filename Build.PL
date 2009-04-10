@@ -12,6 +12,9 @@ my $builder = Module::Build->new(
     },
     add_to_cleanup      => [ 'Net-Amazon-AWS-*' ],
     create_makefile_pl => 'traditional',
+    create_readme       => 1,
+    sign                => 1,
 );
 
+$builder->add_build_element('wsdl');
 $builder->create_build_script();
