@@ -1,56 +1,99 @@
 package Net::Amazon::AWS;
 
-use warnings;
-use strict;
-
 =head1 NAME
 
-Net::Amazon::AWS - The great new Net::Amazon::AWS!
-
-=head1 VERSION
-
-Version 0.01
-
-=cut
-
-our $VERSION = '0.01';
-
+Net::Amazon::AWS - interface to Amazon Associates Web Services
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
     use Net::Amazon::AWS;
 
-    my $foo = Net::Amazon::AWS->new();
-    ...
+    my $aws = Net::Amazon::AWS->new(
+        'AWSAccessKeyId' => 'ABCDEFGHIJKLMNOP',
+    );
+    my $results = $aws->item_search(
+        'Title'       => 'Perl Best Practices',
+        'SearchIndex' => 'Books',
+    );
 
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
-=head1 FUNCTIONS
-
-=head2 function1
+=head1 DESCRIPTION
 
 =cut
 
-sub function1 {
+use warnings;
+use strict;
+
+our $VERSION = '0.01';
+
+use Moose;
+use Moose::Util::TypeConstraints;
+use MooseX::StrictConstructor;
+
+use XML::Compile::WSDL11;
+use XML::Compile::SOAP11;
+use XML::Compile::Transport::SOAPHTTP;
+
+use File::Spec;
+use File::Basename 'dirname';
+
+has 'AWSAccessKeyId' => (is => 'rw', isa => 'Str', default => $ENV{'AWSAccessKeyId'});
+
+has 'item_search_client' => (
+    is      => 'rw',
+    isa     => 'CodeRef',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return $self->_aws_wsdl->compileClient('ItemSearch')
+    },
+);
+
+=head1 METHODS
+
+=head2 new
+
+Object constructor.
+
+=head2 item_search
+
+=cut
+
+sub item_search {
+    my $self = shift;
+    
+    # get search request hash with setting some default values
+    my %req  = (
+        'SearchIndex'    => 'All',
+        'AWSAccessKeyId' => $self->AWSAccessKeyId,
+        @_
+    );
+    
+    my $response = $self->item_search_client->({
+        'AWSAccessKeyId' => delete $req{AWSAccessKeyId},
+        'Request'        => [ \%req, ],
+    });
+    
+    return eval { ${$response->{'body'}->{'Items'}}[0] };
 }
 
-=head2 function2
-
-=cut
-
-sub function2 {
+my $_aws_wsdl;
+sub _aws_wsdl {
+    return $_aws_wsdl
+        if defined $_aws_wsdl;
+    
+    $_aws_wsdl = XML::Compile::WSDL11->new(
+        File::Spec->catfile(
+            dirname($INC{File::Spec->catfile('Net', 'Amazon', 'AWS.pm')}),
+            'AWSECommerceService.wsdl'
+        )
+    );
+    
+    return $_aws_wsdl;
 }
 
 =head1 AUTHOR
 
-Jozef Kutej, C<< <jozef at kutej.net> >>
+Jozef Kutej, C<< <jkutej@cpan.org> >>
 
 =head1 BUGS
 
@@ -104,4 +147,4 @@ under the same terms as Perl itself.
 
 =cut
 
-1; # End of Net::Amazon::AWS
+'let it flow, let it flow';

@@ -2,14 +2,16 @@
 
 =head1 NAME
 
-look-up.pl - look item in Amazon
+look-up.pl - look up items in Amazon
 
 =head1 SYNOPSIS
 
-	look-up.pl [--access-key] search_string
-	
-		--access-key=ABCEDFGHIJKLMNOPQ
-		    can be set also via AWSAccessKeyId environmental variable
+    look-up.pl [--access-key=ABC] search_string
+    
+        --access-key=ABCEDFGHIJKLMNOPQ
+            can be set also via AWSAccessKeyId environmental variable
+        --search-index=Books
+            where to look for. Default is "All".
 
 =head1 DESCRIPTION
 
@@ -22,9 +24,7 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 
-use XML::Compile::WSDL11;
-use XML::Compile::SOAP11;
-use XML::Compile::Transport::SOAPHTTP;
+use Net::Amazon::AWS;
 
 use FindBin '$Bin';
 
@@ -34,31 +34,29 @@ sub main {
     my $help;
     my $access_key = $ENV{AWSAccessKeyId};
     my $look_up;
+    my $search_index = 'All';
     GetOptions(
-        'help|h'       => \$help,
-        'access-key=s' => \$access_key,
+        'help|h'         => \$help,
+        'access-key=s'   => \$access_key,
+        'search-index=s' => \$search_index,
     ) or pod2usage;
     pod2usage if $help;
     
     $look_up = join(' ', @ARGV);
-    
     pod2usage if not $look_up;
-    pod2usage if not $access_key;
     
-	my $wsdl = XML::Compile::WSDL11->new($Bin.'/../lib/Net/Amazon/AWSECommerceService.wsdl');
-	my $call = $wsdl->compileClient('ItemSearch');
-	
-	my $answer = $call->({
-		AWSAccessKeyId => $access_key,
-		Request => {
-			Title       => $look_up,
-			SearchIndex => 'All'
-		}
-	});
-	
-	use Data::Dumper;
-	print Dumper([ $answer ]);
+    my $aws = Net::Amazon::AWS->new();
+    $aws->AWSAccessKeyId($access_key)
+        if defined $access_key;    
+    pod2usage if not $aws->AWSAccessKeyId;
+    
+    my $result = $aws->item_search(
+        Title       => $look_up,
+        SearchIndex => $search_index,
+    );
+    
+    use Data::Dumper;
+    print Dumper([ $result ]);
     
     return 0;
 }
-
