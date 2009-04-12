@@ -2678,11 +2678,11 @@
                     <xs:element name="ExchangeId" type="xs:string" minOccurs="0"/>
                     <xs:element name="ListingId" type="xs:string" minOccurs="0"/>
                     <xs:element name="ASIN" type="xs:string" minOccurs="0"/>
-                                    <xs:element name="SKU" type="xs:string" minOccurs="0"/>
-                                    <xs:element name="UPC" type="xs:string" minOccurs="0"/>
-                                    <xs:element name="EAN" type="xs:string" minOccurs="0"/>
-                                    <xs:element name="WillShipExpedited" type="xs:boolean" minOccurs="0"/>
-                                    <xs:element name="WillShipInternational" type="xs:boolean" minOccurs="0"/>
+                    <xs:element name="SKU" type="xs:string" minOccurs="0"/>
+                    <xs:element name="UPC" type="xs:string" minOccurs="0"/>
+                    <xs:element name="EAN" type="xs:string" minOccurs="0"/>
+                    <xs:element name="WillShipExpedited" type="xs:boolean" minOccurs="0"/>
+                    <xs:element name="WillShipInternational" type="xs:boolean" minOccurs="0"/>
                     <xs:element name="Title" type="xs:string" minOccurs="0"/>
                     <xs:element name="Price" type="tns:Price" minOccurs="0"/>
                     <xs:element name="StartDate" type="xs:string" minOccurs="0"/>

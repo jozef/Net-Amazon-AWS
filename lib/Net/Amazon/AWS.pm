@@ -47,6 +47,15 @@ has 'item_search_client' => (
         return $self->_aws_wsdl->compileClient('ItemSearch')
     },
 );
+has 'item_lookup_client' => (
+    is      => 'rw',
+    isa     => 'CodeRef',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        return $self->_aws_wsdl->compileClient('ItemLookup')
+    },
+);
 
 =head1 METHODS
 
@@ -69,6 +78,23 @@ sub item_search {
     );
     
     my $response = $self->item_search_client->({
+        'AWSAccessKeyId' => delete $req{AWSAccessKeyId},
+        'Request'        => [ \%req, ],
+    });
+    
+    return eval { ${$response->{'body'}->{'Items'}}[0] };
+}
+
+sub item_lookup {
+    my $self = shift;
+    
+    # get search request hash with setting some default values
+    my %req  = (
+        'AWSAccessKeyId' => $self->AWSAccessKeyId,
+        @_
+    );
+    
+    my $response = $self->item_lookup_client->({
         'AWSAccessKeyId' => delete $req{AWSAccessKeyId},
         'Request'        => [ \%req, ],
     });

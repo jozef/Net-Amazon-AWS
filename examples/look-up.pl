@@ -35,10 +35,12 @@ sub main {
     my $access_key = $ENV{AWSAccessKeyId};
     my $look_up;
     my $search_index = 'All';
+    my $asin;
     GetOptions(
         'help|h'         => \$help,
         'access-key=s'   => \$access_key,
         'search-index=s' => \$search_index,
+        'asin'           => \$asin,
     ) or pod2usage;
     pod2usage if $help;
     
@@ -50,10 +52,22 @@ sub main {
         if defined $access_key;    
     pod2usage if not $aws->AWSAccessKeyId;
     
-    my $result = $aws->item_search(
-        Title       => $look_up,
-        SearchIndex => $search_index,
-    );
+    my $result;
+    # lookup for ASIN
+    if ($asin) {
+        $result = $aws->item_lookup(
+            'IdType' => 'ASIN',
+            'ItemId' => $look_up,
+            'ResponseGroup' => 'ItemAttributes',
+        );
+    }
+    # search for the rest
+    else {
+        $result = $aws->item_search(
+            'Title'       => $look_up,
+            'SearchIndex' => $search_index,
+        );
+    }
     
     use Data::Dumper;
     print Dumper([ $result ]);
